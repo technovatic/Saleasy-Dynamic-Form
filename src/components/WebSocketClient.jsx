@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 
 const WebSocketComponent = () => {
   useEffect(() => {
-    const socket = new WebSocket('ws://localhost:3000/ws');
+    const socket = new WebSocket('https://saleasy-dynamic-form.vercel.app/');
 
     socket.onopen = () => {
       console.log('Connected to WebSocket server');
