@@ -1,12 +1,18 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
 const app = express();
 const port = 5000;
 
-app.use(cors());
+app.use(cors({ origin: 'https://saleasy-dynamic-form.vercel.app' }));
 app.use(bodyParser.json());
+
+mongoose.connect('mongodb+srv://kelurvishal:<password>@cluster0.yrou6df.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 let surveys = [];
 let surveyQuestions = {};
