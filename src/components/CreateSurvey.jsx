@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Navbar from './Navbar';
-import { faComments, faUserPlus, faEdit, faCheckSquare, faListAlt, faStar, faCaretDown, faThList, faUpload, faSort, faImage, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faComments, faUserPlus, faEdit, faPlus, faCheckSquare, faEye, faSave, faShareSquare, faListAlt, faStar, faCaretDown, faThList, faUpload, faSort, faImage, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { useFormik } from 'formik';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
@@ -17,8 +17,7 @@ const ThemeModal = ({ onClose, onSave, surveyName }) => {
   const handleSave = () => {
     if (selectedTheme) {
       onSave(selectedTheme);
-      // Make an API call to save the selected theme for the survey
-      fetch('http://localhost:5000/api/surveys/theme', {
+      fetch(`https://saleasy-dynamic-form.vercel.app/api/surveys/theme`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -34,7 +33,7 @@ const ThemeModal = ({ onClose, onSave, surveyName }) => {
       });
     }
   };
-
+  
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50">
       <div className="bg-gradient-to-br p-8 rounded shadow-lg relative w-full sm:w-2/3 md:w-1/2 lg:w-1/3">
@@ -64,6 +63,9 @@ const ThemeModal = ({ onClose, onSave, surveyName }) => {
 
 const FormBuilder = ({ selectedTheme, surveyName }) => {
   const [questions, setQuestions] = useState([]);
+  const [showPreview, setShowPreview] = useState(false);
+
+  const formStyle = selectedTheme ? { background: selectedTheme.className, backgroundImage: selectedTheme.image ? `url(${selectedTheme.image})` : 'none', backgroundSize: 'cover' } : {};
 
   const addQuestion = () => {
     setQuestions([
@@ -80,7 +82,7 @@ const FormBuilder = ({ selectedTheme, surveyName }) => {
   const handleQuestionChange = (index, key, value) => {
     const newQuestions = [...questions];
     newQuestions[index][key] = value;
-
+  
     if (key === 'type') {
       if (value === 'Multiple Choice') {
         newQuestions[index].options = ['', '', '', ''];
@@ -88,7 +90,7 @@ const FormBuilder = ({ selectedTheme, surveyName }) => {
         newQuestions[index].options = ['', ''];
       }
     }
-
+  
     setQuestions(newQuestions);
   };
 
@@ -128,8 +130,7 @@ const FormBuilder = ({ selectedTheme, surveyName }) => {
     onSubmit: (values) => {
       console.log('Form values:', values);
       
-      // Send questions to the backend
-      fetch('http://localhost:5000/api/surveys/questions', {
+      fetch(`https://saleasy-dynamic-form.vercel.app/api/surveys/questions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -142,7 +143,7 @@ const FormBuilder = ({ selectedTheme, surveyName }) => {
       .then(response => response.json())
       .then(data => {
         console.log('Questions saved:', data);
-        setQuestions([]); // Clear questions after submitting
+        setQuestions([]);
       })
       .catch(error => {
         console.error('Error saving questions:', error);
@@ -151,6 +152,7 @@ const FormBuilder = ({ selectedTheme, surveyName }) => {
   });
 
   return (
+    <div style={formStyle}>
     <DragDropContext onDragEnd={onDragEnd}>
       <Droppable droppableId="questions">
         {(provided) => (
@@ -178,119 +180,107 @@ const FormBuilder = ({ selectedTheme, surveyName }) => {
                       </div>
                       <input
                         type="text"
-                        className="border-b flex-grow px-2 py-1 focus:outline-none"
+                        className="border-b flex-grow px-2 py-1 focus:outline-none placeholder-black"
                         placeholder="Enter your question"
                         value={question.text}
                         onChange={(e) => handleQuestionChange(index, 'text', e.target.value)}
                       />
-                      {question.type === 'Multiple Choice' && (
-                        <>
-                          {question.options.map((option, optionIndex) => (
-                            <div key={optionIndex} className="flex items-center space-x-2 group">
-                              <input
-                                type="text"
-                                className="border-b flex-grow px-2 py-1 focus:outline-none"
-                                placeholder={`Option ${String.fromCharCode(97 + optionIndex)}`}
-                                value={option}
-                                onChange={(e) => {
-                                  const newOptions = [...question.options];
-                                  newOptions[optionIndex] = e.target.value;
-                                  handleQuestionChange(index, 'options', newOptions);
-                                }}
-                              />
-                              <div className="flex space-x-2 opacity-0 group-hover:opacity-100">
-                                <button type="button" onClick={() => removeOption(index, optionIndex)} className="text-red-500">
-                                  <FontAwesomeIcon icon={faTimes} />
-                                </button>
-                                <button type="button" className="text-blue-500">
-                                  <FontAwesomeIcon icon={faEdit} />
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                          {question.options.length < 4 && (
-                            <button type="button" onClick={() => addOption(index)} className="text-green-500 mt-2">
-                              + Add Option
-                            </button>
-                          )}
-                        </>
-                      )}
-                      {question.type === 'Single Choice' && (
-                        <>
-                          {question.options.map((option, optionIndex) => (
-                            <div key={optionIndex} className="flex items-center space-x-2 group">
-                              <input
-                                type="text"
-                                className="border-b flex-grow px-2 py-1 focus:outline-none"
-                                placeholder={`Option ${String.fromCharCode(97 + optionIndex)}`}
-                                value={option}
-                                onChange={(e) => {
-                                  const newOptions = [...question.options];
-                                  newOptions[optionIndex] = e.target.value;
-                                  handleQuestionChange(index, 'options', newOptions);
-                                }}
-                              />
-                              <div className="flex space-x-2 opacity-0 group-hover:opacity-100">
-                                <button type="button" onClick={() => removeOption(index, optionIndex)} className="text-red-500">
-                                  <FontAwesomeIcon icon={faTimes} />
-                                </button>
-                                <button type="button" className="text-blue-500">
-                                  <FontAwesomeIcon icon={faEdit} />
-                                </button>
-                              </div>
-                            </div>
-                          ))}
-                          {question.options.length < 2 && (
-                            <button type="button" onClick={() => addOption(index)} className="text-green-500 mt-2">
-                              + Add Option
-                            </button>
-                          )}
-                        </>
-                      )}
                       <select
-                        className="border rounded-lg px-2 py-1 focus:outline-none"
                         value={question.type}
                         onChange={(e) => handleQuestionChange(index, 'type', e.target.value)}
+                        className="border-b px-2 py-1 focus:outline-none placeholder-blue"
                       >
                         <option value="Multiple Choice">Multiple Choice</option>
                         <option value="Single Choice">Single Choice</option>
                       </select>
+                      {question.options.map((option, optionIndex) => (
+                        <div key={optionIndex} className="flex items-center space-x-2 group">
+                          <input
+                            type="text"
+                            className="border-b flex-grow px-2 py-1 focus:outline-none placeholder-black"
+                            placeholder={`Option ${String.fromCharCode(97 + optionIndex)}`}
+                            value={option}
+                            onChange={(e) => {
+                              const newOptions = [...question.options];
+                              newOptions[optionIndex] = e.target.value;
+                              handleQuestionChange(index, 'options', newOptions);
+                            }}
+                          />
+                          <div className="flex space-x-2 opacity-0 group-hover:opacity-100">
+                            <button type="button" onClick={() => removeOption(index, optionIndex)} className="text-red-500">
+                              <FontAwesomeIcon icon={faTimes} />
+                            </button>
+                            {question.type === 'Multiple Choice' && question.options.length < 4 && (
+                              <button type="button" onClick={() => addOption(index)} className="text-green-500">
+                                <FontAwesomeIcon icon={faPlus} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </Draggable>
               ))}
-              <div className="text-center mb-4">
-                <button
-                  type="button"
-                  onClick={addQuestion}
-                  className="bg-green-500 text-white px-4 py-2 rounded"
-                >
-                  Add Question
-                </button>
-              </div>
-              <div className="text-center">
-                <button
-                  type="submit"
-                  className="bg-black text-white px-4 py-2 rounded"
-                >
-                  Save
-                </button>
-              </div>
+              {provided.placeholder}
+              <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                  <button type="button" onClick={addQuestion} className="bg-green-500 text-white px-4 py-2 rounded">
+                    + Add Question
+                  </button>
+                  <button type="button" className="bg-blue-500 text-white px-4 py-2 rounded flex items-center" onClick={() => setShowPreview(true)}>
+                    <FontAwesomeIcon icon={faEye} className="text-lg" />
+                    <span className="ml-2">Preview Survey</span>
+                  </button>
+                  <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded flex items-center">
+                    <FontAwesomeIcon icon={faSave} />
+                    <span className="ml-2">Save Survey</span>
+                  </button>
+                </div>
             </form>
-            {provided.placeholder}
           </div>
         )}
       </Droppable>
     </DragDropContext>
-  );
+
+    {showPreview && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white p-8 rounded-lg shadow-lg max-h-full overflow-y-auto w-full sm:w-2/3 md:w-1/2 lg:w-1/3">
+          <h2 className="text-xl font-semibold mb-4">Survey Preview</h2>
+          <div className="space-y-4">
+            {questions.map((question, index) => (
+              <div key={index} className="p-4 border rounded-lg glassmorphism mb-4" style={{ background: selectedTheme ? selectedTheme.className : 'transparent' }}>
+                <h3 className="font-bold">Q{index + 1}: {question.text}</h3>
+                {question.options.map((option, optionIndex) => (
+                  <div key={optionIndex} className="flex items-center space-x-2">
+                    <span className="circle bg-gray-300 rounded-full w-4 h-4 flex-shrink-0"></span>
+                    <span>{option}</span>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+          <button className="bg-green-500 text-white px-4 py-2 rounded mt-4" onClick={() => setShowPreview(false)}>
+            Close Preview
+          </button>
+        </div>
+      </div>
+    )}
+  </div>
+);
 };
 
-const CreateSurvey = () => {
+const SurveyForm = () => {
   const location = useLocation();
-  const { surveyName } = location.state || { surveyName: '' };
+  const { state } = location;
+  const { surveyName } = state;
+  const [showThemeModal, setShowThemeModal] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState(null);
-  const [themeModalVisible, setThemeModalVisible] = useState(false);
 
+  const handleThemeSave = (theme) => {
+    setSelectedTheme(theme);
+    setShowThemeModal(false);
+  };
+ 
   const renderBuildSection = () => (
     <div className="lg:w-1/5 bg-gray-100 p-4 items-start justify-start mt-0 space-y-3">
       <button className="text-left w-full p-2 bg-green-500 text-white rounded flex items-center border border-black">
@@ -326,43 +316,47 @@ const CreateSurvey = () => {
   );
 
   return (
-    <>
+    <div className="relative">
       <Navbar />
-      <div className="flex flex-col items-stretch bg-gray-400 pt-4 px-4 mt-1 mb-0 lg:h-2xl ">
-        <div className="w-full flex items-center justify-between mb-2 mt-3">
-          <h1 className="text-2xl font-bold">{surveyName}</h1>
-          <div className="ml-auto flex space-x-4">
-           <div className="bg-yellow-400 rounded-lg p-2 flex items-center">
-              <span className="text-black hover:text-gray-700 cursor-pointer">
-                <FontAwesomeIcon icon={faEdit} className="ml-1" /> Edit Reports
-              </span>
-            </div>
-            <div className="bg-yellow-400 rounded-lg p-2">
-              <FontAwesomeIcon icon={faComments} className="text-black hover:text-gray-700 cursor-pointer" />
-            </div>
-            <div className="bg-yellow-400 rounded-lg p-2 flex items-center">
-              <span className="text-black hover:text-gray-700 cursor-pointer">
-                <FontAwesomeIcon icon={faUserPlus} className="ml-1" /> Add Collaborators
-              </span>
-            </div>
+      <div className="flex flex-col sm:flex-row justify-between w-full mt-4">
+        <h2 className="text-2xl font-bold ml-4">{surveyName}</h2>
+        <div className="ml-5 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mr-7">
+          <div className="bg-yellow-400 rounded-lg p-2 flex items-center">
+            <span className="text-black hover:text-gray-700 cursor-pointer">
+              <FontAwesomeIcon icon={faEdit} className="ml-1" /> Edit Reports
+            </span>
+          </div>
+          <div className="bg-yellow-400 rounded-lg p-2 flex items-center">
+            <span className="text-black hover:text-gray-700 cursor-pointer">
+              <FontAwesomeIcon icon={faComments} className="ml-1" /> Chats
+            </span>
+          </div>
+          <div className="bg-yellow-400 rounded-lg p-2 flex items-center ">
+            <span className="text-black hover:text-gray-700 cursor-pointer">
+              <FontAwesomeIcon icon={faUserPlus} className="ml-1" /> Add Collaborators
+            </span>
           </div>
         </div>
+      </div>
         <div className="w-full flex flex-col lg:flex-row mt-2 mb-1">
           {renderBuildSection()}
-          <div className="lg:w-4/5 p-4 border border-red-400 justify-start">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Survey Form</h2>
-              <button className="bg-green-500 text-black bold px-4 py-2 rounded" onClick={() => setThemeModalVisible(true)}>
-                Select Theme
-              </button>
-            </div>
-            <FormBuilder selectedTheme={selectedTheme} />
+          <div className="lg:w-4/5 p-4 border border-red-400 justify-start ">
+          <div className="ml-auto flex space-x-4  p-4 justify-between items-center">
+          <button className="bg-blue-500 text-white px-4 py-2 rounded flex items-center">
+            <FontAwesomeIcon icon={faShareSquare} className="mr-2" /> Share Survey
+          </button>
+          <button onClick={() => setShowThemeModal(true)} className="bg-green-500 text-white px-4 py-2 rounded flex items-center ">
+            <FontAwesomeIcon icon={faEdit} className="ml-2" /> Select Theme
+          </button>
           </div>
+        {showThemeModal && <ThemeModal onClose={() => setShowThemeModal(false)} onSave={handleThemeSave} surveyName={surveyName} />}
+        <div className="mt-8 w-full">
+          <FormBuilder selectedTheme={selectedTheme} surveyName={surveyName} />
         </div>
-        {themeModalVisible && <ThemeModal onClose={() => setThemeModalVisible(false)} onSave={(theme) => setSelectedTheme(theme.name)} surveyName={surveyName} />}
+        </div>
       </div>
-    </>
+      </div>
   );
 };
 
-export default CreateSurvey;
+export default SurveyForm;
