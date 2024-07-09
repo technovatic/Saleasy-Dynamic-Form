@@ -17,20 +17,6 @@ const ThemeModal = ({ onClose, onSave, surveyName }) => {
   const handleSave = () => {
     if (selectedTheme) {
       onSave(selectedTheme);
-      fetch(`https://saleasy-dynamic-form.vercel.app/api/surveys/theme`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ surveyTitle: surveyName, theme: selectedTheme }),
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Theme saved:', data);
-      })
-      .catch(error => {
-        console.error('Error saving theme:', error);
-      });
     }
   };
   
@@ -61,7 +47,7 @@ const ThemeModal = ({ onClose, onSave, surveyName }) => {
   );
 };
 
-const FormBuilder = ({ selectedTheme, surveyName }) => {
+const FormBuilder = ({ selectedTheme, surveyName, onSave }) => {
   const [questions, setQuestions] = useState([]);
   const [showPreview, setShowPreview] = useState(false);
 
@@ -128,26 +114,7 @@ const FormBuilder = ({ selectedTheme, surveyName }) => {
       questions: [],
     },
     onSubmit: (values) => {
-      console.log('Form values:', values);
-      
-      fetch(`https://saleasy-dynamic-form.vercel.app/api/surveys/questions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          surveyTitle: surveyName,
-          questions: questions,
-        }),
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log('Questions saved:', data);
-        setQuestions([]);
-      })
-      .catch(error => {
-        console.error('Error saving questions:', error);
-      });
+      onSave(surveyName, selectedTheme, questions);
     },
   });
 
@@ -315,6 +282,36 @@ const SurveyForm = () => {
     </div>
   );
 
+  const handleSaveSurvey = async (name, theme, questions) => {
+    const surveyData = {
+      name,
+      theme: theme?.name || '',
+      questions
+    };
+
+    try {
+      const response = await fetch('https://your-api-url/api/surveys', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(surveyData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save survey');
+      }
+
+      const savedSurvey = await response.json();
+      console.log('Survey saved:', savedSurvey);
+      alert('Survey saved successfully!');
+    } catch (error) {
+      console.error('Error saving survey:', error);
+      alert('Failed to save survey');
+    }
+  };
+
+
   return (
     <div className="relative">
       <Navbar />
@@ -351,7 +348,7 @@ const SurveyForm = () => {
           </div>
         {showThemeModal && <ThemeModal onClose={() => setShowThemeModal(false)} onSave={handleThemeSave} surveyName={surveyName} />}
         <div className="mt-8 w-full">
-          <FormBuilder selectedTheme={selectedTheme} surveyName={surveyName} />
+        <FormBuilder selectedTheme={selectedTheme} surveyName={surveyName} onSave={handleSaveSurvey} />
         </div>
         </div>
       </div>
