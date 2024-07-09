@@ -22,7 +22,7 @@ const surveySchema = new mongoose.Schema({
 
 const Survey = mongoose.model('Survey', surveySchema);
 
-app.post('/api/surveys', async (req, res) => {
+app.get('/api/surveys', async (req, res) => {
   try {
     const { name, theme, questions } = req.body;
     const newSurvey = new Survey({ name, theme, questions });
