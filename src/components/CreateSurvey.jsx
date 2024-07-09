@@ -282,35 +282,34 @@ const SurveyForm = () => {
     </div>
   );
 
-  const handleSave = async (surveyName, theme, questions) => {
-  const surveyData = {
-    name: surveyName,
-    theme: theme?.name || '',
-    questions
-  };
+  const handleSaveSurvey = async (name, theme, questions) => {
+    const surveyData = {
+      name,
+      theme: theme?.name || '',
+      questions
+    };
 
-  try {
-    const response = await fetch('https://saleasy-dynamic-form.vercel.app/api/surveys', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(surveyData),
-    });
+    try {
+      const response = await fetch('https://saleasy-dynamic-form.vercel.app/api/surveys', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(surveyData),
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to save survey');
+      if (!response.ok) {
+        throw new Error('Failed to save survey');
+      }
+
+      const savedSurvey = await response.json();
+      console.log('Survey saved:', savedSurvey);
+      alert('Survey saved successfully!');
+    } catch (error) {
+      console.error('Error saving survey:', error);
+      alert('Failed to save survey');
     }
-
-    const savedSurvey = await response.json();
-    console.log('Survey saved:', savedSurvey);
-    alert('Survey saved successfully!');
-  } catch (error) {
-    console.error('Error saving survey:', error);
-    alert('Failed to save survey');
-  }
-};
-
+  };
 
 
   return (
