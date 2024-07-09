@@ -4,12 +4,12 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 app.use(cors({ origin: 'https://saleasy-dynamic-form.vercel.app' }));
 app.use(bodyParser.json());
 
-mongoose.connect('mongodb+srv://kelurvishal:<password>@cluster0.yrou6df.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
+mongoose.connect('mongodb+srv://kelurvishal:<password>@cluster0.yrou6df.mongodb.net/yourDatabaseName', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
