@@ -291,7 +291,7 @@ const SurveyForm = () => {
 
     try {
       const response = await fetch('https://saleasy-dynamic-form.vercel.app/api/surveys', {
-        method: 'POST',
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
