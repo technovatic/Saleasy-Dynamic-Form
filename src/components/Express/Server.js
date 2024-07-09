@@ -14,27 +14,23 @@ mongoose.connect('mongodb+srv://kelurvishal:<password>@cluster0.yrou6df.mongodb.
   useUnifiedTopology: true,
 });
 
-let surveys = [];
-let surveyQuestions = {};
-let surveyThemes = {};
-
-app.post('/api/surveys', (req, res) => {
-  const { name, theme } = req.body;
-  const newSurvey = { id: surveys.length + 1, name, theme };
-  surveys.push(newSurvey);
-  res.json(newSurvey);
+const surveySchema = new mongoose.Schema({
+  name: String,
+  theme: String,
+  questions: Array
 });
 
-app.post('/api/surveys/theme', (req, res) => {
-  const { surveyTitle, theme } = req.body;
-  surveyThemes[surveyTitle] = theme;
-  res.json({ message: 'Theme saved successfully!' });
-});
+const Survey = mongoose.model('Survey', surveySchema);
 
-app.post('/api/surveys/questions', (req, res) => {
-  const { surveyTitle, questions } = req.body;
-  surveyQuestions[surveyTitle] = questions;
-  res.json({ message: 'Questions saved successfully!' });
+app.post('/api/surveys', async (req, res) => {
+  try {
+    const { name, theme, questions } = req.body;
+    const newSurvey = new Survey({ name, theme, questions });
+    await newSurvey.save();
+    res.json(newSurvey);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to save survey' });
+  }
 });
 
 app.listen(port, () => {
