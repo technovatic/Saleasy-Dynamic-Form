@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faFolder, faList, faTh, faPlus } from '@fortawesome/free-solid-svg-icons';
+import axios from 'axios';
 
 const Header = ({ onCreateSurvey }) => {
   return (
@@ -68,17 +69,19 @@ const SurveyPopup = ({ onClose }) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+  
     if (surveyName && surveyCategory) {
       try {
-        const response = await fetch('http://localhost:5000/api/surveys', {
-          method: 'POST',
+        const response = await axios.post('http://localhost:5000/api/surveys', {
+          title: surveyName,
+          category: surveyCategory,
+        }, {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ title: surveyName, category: surveyCategory }),
         });
-
-        if (response.ok) {
+  
+        if (response.status === 200) {
           navigate('/create-survey', { state: { surveyName, surveyCategory } });
         } else {
           alert('Failed to create survey');
