@@ -32,10 +32,7 @@ const App = () => {
           </> : <Navigate to="/" />} />
 
           {/* Route for /create-survey */}
-          <Route path="/create-survey" element={isLoggedIn ? <>
-            <Navbar onLogout={handleLogout} />
-            <CreateSurvey />
-          </> : <Navigate to="/" />} />
+          <Route path="/create-survey" element={<CreateSurvey />} />
         </Routes>
       </div>
     </Router>
